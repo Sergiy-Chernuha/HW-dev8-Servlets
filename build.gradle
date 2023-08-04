@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group = 'ua.goit'
+version = '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'war'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-servlet-api
+    compileOnly 'org.apache.tomcat:tomcat-servlet-api:9.0.78'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
