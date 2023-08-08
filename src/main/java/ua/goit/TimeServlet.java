@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +40,7 @@ public class TimeServlet extends HttpServlet {
         String timezone = req.getParameter("timezone");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'");
         ZonedDateTime dateTime = ZonedDateTime.now(ZoneId.of("UTC"));
-        String formatedDateTime;
+        String formattedDateTime;
 
         if (Objects.isNull(timezone)) {
             String timezoneFromCookie = getCookieValue(req, "lastTimezone");
@@ -55,17 +54,20 @@ public class TimeServlet extends HttpServlet {
             resp.addCookie(new Cookie("lastTimezone", timezone));
         } else {
             formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'X");
-            timezone = URLEncoder.encode(req.getParameter("timezone"), "UTF-8");
-            resp.addCookie(new Cookie("lastTimezone", timezone));
 
+            if (timezone.contains(" ")) {
+                timezone = timezone.replace(" ", "+");
+            }
+
+            resp.addCookie(new Cookie("lastTimezone", timezone));
             dateTime = ZonedDateTime.now(ZoneId.of(timezone));
         }
 
-        formatedDateTime = dateTime.format(formatter);
+        formattedDateTime = dateTime.format(formatter);
         resp.setContentType("text/html; charset=utf-8");
 
         Map<String, Object> contextMap = new LinkedHashMap<>();
-        contextMap.put("CurrentTime", formatedDateTime);
+        contextMap.put("CurrentTime", formattedDateTime);
 
         Context simpleContext = new Context(req.getLocale(), contextMap);
 
@@ -84,7 +86,7 @@ public class TimeServlet extends HttpServlet {
         for (String oneCookies : separateCookies) {
             String[] keyValue = oneCookies.split("=");
 
-            if (searchCookie.equals(keyValue[0])) {
+            if (searchCookie.equals(keyValue[0].trim())) {
                 return keyValue[1];
             }
         }

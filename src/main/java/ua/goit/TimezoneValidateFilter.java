@@ -7,7 +7,6 @@ import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Objects;
@@ -18,9 +17,7 @@ public class TimezoneValidateFilter extends HttpFilter {
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String timezone = request.getParameter("timezone");
 
-        if (Objects.isNull(timezone)
-                || isCorrectZoneId(URLEncoder.encode(request.getParameter("timezone"), "UTF-8")))
-        {
+        if (Objects.isNull(timezone) || isCorrectZoneId(timezone)) {
             chain.doFilter(request, response);
         } else {
             response.setStatus(400);
@@ -32,8 +29,11 @@ public class TimezoneValidateFilter extends HttpFilter {
 
     private boolean isCorrectZoneId(String timezone) {
         try {
-            ZoneId.of(timezone);
+            if (timezone.contains(" ")) {
+                timezone = timezone.replace(" ", "+");
+            }
 
+            ZoneId.of(timezone);
             return true;
         } catch (DateTimeException e) {
             return false;
